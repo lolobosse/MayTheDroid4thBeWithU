@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class Main {
 
-    static class Package {
+    public static class Package {
 
         boolean isThirdParty;
         String packageName;

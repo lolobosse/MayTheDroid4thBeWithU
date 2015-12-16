@@ -5,14 +5,20 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.koushikdutta.async.http.AsyncHttpClient;
+import com.koushikdutta.async.http.AsyncHttpResponse;
+
 import java.io.IOException;
 import java.nio.charset.MalformedInputException;
+import java.util.List;
 
 import jobninja.eu.apkgetter.Main;
+import jobninja.eu.apksender.ApkSender;
 
 public class ScrollingActivity extends AppCompatActivity {
 
@@ -32,7 +38,36 @@ public class ScrollingActivity extends AppCompatActivity {
             }
         });
 
-        Main.getPackages(false, null);
+        Main.getPackages(false, new Main.Callback() {
+            @Override
+            public void onError(Exception e) {
+
+            }
+
+            @Override
+            public void onSuccess(List<Main.Package> packages) {
+                for (Main.Package a : packages){
+                    if (a.isThirdParty()){
+                        ApkSender.getInstance().sendAPK(a, new AsyncHttpClient.StringCallback() {
+                            @Override
+                            public void onCompleted(Exception e, AsyncHttpResponse source, String result) {
+                                if (e != null){
+                                    int i = 1;
+                                }
+                                Log.d("ScrollingActivity", "Upload completed");
+                            }
+                            // TODO: Progress doesn't work yet but in the future, it still will be the same code,
+                            // I suspect that the string getter is not the appropriate object for such a task
+                            @Override
+                            public void onProgress(AsyncHttpResponse response, long downloaded, long total) {
+                                Log.d("ScrollingActivity", (downloaded / total) * 100 + "%");
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+        });
 
     }
 
